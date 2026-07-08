@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Chessign - Ücretsiz satranç oyunu analiz aracı. Stockfish 18 Lite motoru ve AI koç ile oyunlarınızı inceleyin. chess.com ve lichess.org'dan oyun aktarın." />
+  <meta name="theme-color" content="#1a1a2e" />
+  <title>Chessign - Ücretsiz Satranç Analizi ve AI Koç</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='80' font-size='80'%3E%E2%99%9E%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/board.css" />
+  <link rel="stylesheet" href="styles/components.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">♞</span>
+        <h1>Chessign</h1>
+        <span class="tagline">Satranç + Analiz</span>
+      </div>
+      <nav class="header-nav">
+        <a href="https://chessign.netlify.app" class="nav-link">Ana Sayfa</a>
+        <a href="#how-it-works" class="nav-link">Nasıl Çalışır</a>
+        <a href="https://github.com" class="nav-link" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+
+    <main class="app-main">
+      <section class="import-panel" id="importPanel">
+        <div class="panel-header">
+          <h2>Oyun Ekle</h2>
+          <p>Bir satranç oyununu PGN, chess.com veya lichess.org'dan yükleyip Stockfish 18 Lite ile analiz edin.</p>
+        </div>
+
+        <div class="import-tabs" role="tablist">
+          <button class="tab-button active" role="tab" data-tab="pgn" aria-selected="true">PGN</button>
+          <button class="tab-button" role="tab" data-tab="chesscom" aria-selected="false">chess.com</button>
+          <button class="tab-button" role="tab" data-tab="lichess" aria-selected="false">lichess.org</button>
+        </div>
+
+        <div class="tab-panels">
+          <div class="tab-panel active" id="tab-pgn" role="tabpanel">
+            <label for="pgnInput">PGN yapıştırın</label>
+            <textarea id="pgnInput" rows="10" placeholder='[Event "Günlük Oyun"]&#10;[White "ben"]&#10;[Black "rakip"]&#10;&#10;1. e4 e5 2. Nf3 Nc6 ...'></textarea>
+            <button class="btn btn-primary" id="loadPgnBtn">PGN Yükle</button>
+            <button class="btn btn-secondary" id="loadSampleBtn">Örnek Oyun Yükle</button>
+          </div>
+
+          <div class="tab-panel" id="tab-chesscom" role="tabpanel" hidden>
+            <label for="chesscomUser">chess.com kullanıcı adı</label>
+            <input type="text" id="chesscomUser" placeholder="örn. hikaru" />
+            <label for="chesscomYear">Yıl (isteğe bağlı)</label>
+            <input type="number" id="chesscomYear" placeholder="örn. 2024" min="2007" max="2100" />
+            <label for="chesscomMonth">Ay (isteğe bağlı)</label>
+            <input type="number" id="chesscomMonth" placeholder="1-12" min="1" max="12" />
+            <button class="btn btn-primary" id="fetchChesscomBtn">Oyunları Getir</button>
+            <div class="hint">Yalnızca halka açık arşivler. Getirdikten sonra bir oyun seçin.</div>
+            <div id="chesscomGamesList" class="games-list"></div>
+          </div>
+
+          <div class="tab-panel" id="tab-lichess" role="tabpanel" hidden>
+            <label for="lichessUser">lichess kullanıcı adı</label>
+            <input type="text" id="lichessUser" placeholder="örn. DrNykterstein" />
+            <label for="lichessMax">Maks oyun (isteğe bağlı)</label>
+            <input type="number" id="lichessMax" placeholder="20" min="1" max="200" />
+            <button class="btn btn-primary" id="fetchLichessBtn">Oyunları Getir</button>
+            <div class="hint">Son oyunların NDJSON akışı.</div>
+            <div id="lichessGamesList" class="games-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="review-panel" id="reviewPanel" hidden>
+        <aside class="board-area">
+          <div class="board-header">
+            <div class="player-info top">
+              <span class="player-name" id="blackName">Black</span>
+              <span class="player-rating" id="blackRating"></span>
+            </div>
+            <div class="board-wrapper">
+              <div id="chessBoard" class="chess-board" role="grid" aria-label="Chess board"></div>
+            </div>
+            <div class="player-info bottom">
+              <span class="player-name" id="whiteName">White</span>
+              <span class="player-rating" id="whiteRating"></span>
+            </div>
+          </div>
+
+          <div class="move-controls">
+            <button class="btn-icon" id="startBtn" title="Başa dön" aria-label="Başa dön">⏮</button>
+            <button class="btn-icon" id="prevBtn" title="Önceki hamle" aria-label="Önceki hamle">◀</button>
+            <button class="btn-icon" id="playBtn" title="Oynat / duraklat" aria-label="Oynat / duraklat">▶</button>
+            <button class="btn-icon" id="nextBtn" title="Sonraki hamle" aria-label="Sonraki hamle">▶</button>
+            <button class="btn-icon" id="endBtn" title="Sona git" aria-label="Sona git">⏭</button>
+          </div>
+
+          <div class="flip-controls">
+            <button class="btn btn-secondary" id="flipBtn">Tahtayı Çevir</button>
+          </div>
+        </aside>
+
+        <section class="analysis-area">
+          <div class="panel-header">
+            <h2>Analiz</h2>
+            <div class="engine-status">
+              <span class="status-dot" id="engineDot"></span>
+              <span id="engineStatus">Motor: bekliyor</span>
+            </div>
+          </div>
+
+          <div class="eval-bar-wrapper">
+            <div class="eval-bar" id="evalBar">
+              <div class="eval-fill" id="evalFill"></div>
+              <div class="eval-label" id="evalLabel">0.00</div>
+            </div>
+          </div>
+
+          <div class="move-info">
+            <div class="move-current">
+              <span class="move-label">Hamle</span>
+              <span id="moveNumber">0</span> / <span id="moveTotal">0</span>
+            </div>
+            <div class="move-best">
+              <span class="move-label">En İyi</span>
+              <span id="bestMove">—</span>
+            </div>
+            <div class="move-eval">
+              <span class="move-label">Değer</span>
+              <span id="currentEval">0.00</span>
+            </div>
+          </div>
+
+          <div class="move-list-wrapper">
+            <h3>Hamle Listesi</h3>
+            <div class="move-list" id="moveList" role="list"></div>
+          </div>
+
+          <div class="actions-row">
+            <button class="btn btn-primary" id="analyzeBtn">Tüm Oyunu Analiz Et</button>
+            <button class="btn btn-secondary" id="abortBtn" hidden>Analizi Durdur</button>
+            <button class="btn btn-accent" id="coachBtn">AI Koç'a Sor</button>
+          </div>
+
+          <div class="coach-panel" id="coachPanel" hidden>
+            <div class="panel-header">
+              <h3>AI Koç</h3>
+              <div class="coach-backend" id="coachBackend">arka uç: —</div>
+            </div>
+            <div class="coach-context">
+              <label for="coachQuestion">Soru (isteğe bağlı)</label>
+              <textarea id="coachQuestion" rows="2" placeholder="örn. En büyük hatam neydi ve nasıl oynamalıydım?"></textarea>
+            </div>
+            <button class="btn btn-primary" id="runCoachBtn">Koçluk Notları Oluştur</button>
+            <div class="coach-output" id="coachOutput" aria-live="polite"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <section class="how-section" id="how-it-works">
+      <h2>Chessign Nasıl Çalışır</h2>
+      <div class="how-grid">
+        <div class="how-card">
+          <div class="how-num">1</div>
+          <h3>Ekle</h3>
+          <p>PGN yapıştırın veya chess.com / lichess.org'dan son oyunlarınızı çekin.</p>
+        </div>
+        <div class="how-card">
+          <div class="how-num">2</div>
+          <h3>Analiz</h3>
+          <p>Stockfish 18 Lite tarayıcınızda WebAssembly ile çalışır. Hiçbir şey yüklemeniz gerekmez.</p>
+        </div>
+        <div class="how-card">
+          <div class="how-num">3</div>
+          <h3>Öğren</h3>
+          <p>Hatalarınızı, kaçırdığınız fırsatları ve planları gösteren AI koç özeti alın.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="app-footer">
+      <p>© Chessign · Stockfish 18 Lite (WASM) ile çalışır · AI Koç: NVIDIA NIM (Gemini yedek)</p>
+      <p class="legal">chess.com ve lichess.org verileri ilgili kamu API'leri aracılığıyla kullanılır. Bu hizmetlerle bağlantılı değildir.</p>
+    </footer>
+  </div>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

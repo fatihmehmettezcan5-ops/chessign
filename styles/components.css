@@ -1,0 +1,31 @@
+.btn,.btn-icon{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 18px;border:none;border-radius:6px;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;font-family:var(--font)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover:not(:disabled){background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text)}.btn-secondary:hover:not(:disabled){background:var(--bg2);border:1px solid var(--bg3)}
+.btn-accent{background:var(--gold);color:#1a1a2e}.btn-accent:hover:not(:disabled){background:#fbbf24}
+.btn-icon{width:36px;height:36px;padding:0;border-radius:50%;background:var(--bg3);color:var(--text);font-size:1rem}
+.btn-icon:hover:not(:disabled){background:var(--accent);color:#fff}
+.import-panel{background:var(--bg2);border-radius:var(--radius);padding:20px;border:1px solid var(--bg3)}
+.import-tabs{display:flex;gap:0;margin-bottom:12px;border-bottom:2px solid var(--bg3)}
+.tab-button{padding:8px 20px;background:transparent;border:none;color:var(--text2);cursor:pointer;font-size:.85rem;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;font-family:var(--font)}
+.tab-button:hover{color:var(--text)}
+.tab-button.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+.tab-panel{display:none;flex-direction:column;gap:8px}
+.tab-panel.active{display:flex}
+.tab-panel label{font-size:.82rem;color:var(--text2);margin-bottom:-4px}
+.tab-panel input,.tab-panel textarea{padding:10px 12px;background:var(--bg);border:1px solid var(--bg3);border-radius:6px;color:var(--text);font-size:.85rem;font-family:var(--font);outline:none;transition:border .2s;width:100%}
+.tab-panel input:focus,.tab-panel textarea:focus{border-color:var(--accent)}
+.tab-panel textarea{resize:vertical;min-height:80px;font-family:var(--mono);font-size:.82rem}
+.coach-panel{background:var(--bg2);border-radius:var(--radius);padding:16px;border:1px solid var(--bg3);margin-top:8px}
+.coach-backend{font-size:.72rem;color:var(--text2);margin-left:auto}
+.coach-context{margin-bottom:8px}
+.coach-output{background:var(--bg);border-radius:6px;padding:12px;margin-top:8px;max-height:320px;overflow-y:auto;font-size:.85rem;line-height:1.6;white-space:pre-wrap}
+.coach-output .coach-loading{display:flex;align-items:center;gap:8px;color:var(--text2);font-size:.82rem}
+.coach-output .coach-loading .spinner{width:16px;height:16px;border:2px solid var(--bg3);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.coach-output .coach-empty{color:var(--text2);font-style:italic;font-size:.82rem}
+.coach-output .coach-error{color:var(--red);font-size:.82rem}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text2)}

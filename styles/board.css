@@ -1,0 +1,29 @@
+.board-wrapper{position:relative}
+.chess-board{display:grid;grid-template-columns:repeat(8,1fr);width:min(70vw,480px);aspect-ratio:1;border:3px solid var(--board-border);border-radius:4px;overflow:hidden;box-shadow:var(--shadow);user-select:none}
+.chess-board .sq{display:flex;align-items:center;justify-content:center;font-size:clamp(24px,5vw,48px);cursor:pointer;position:relative;transition:background .15s}
+.chess-board .sq.light{background:var(--board-light)}.chess-board .sq.dark{background:var(--board-dark)}
+.chess-board .sq.selected{background:#829769 !important}
+.chess-board .sq.last-move{background:var(--lastmove)!important}
+.chess-board .sq.highlight::after{content:'';position:absolute;width:32%;height:32%;border-radius:50%;background:var(--highlight)}
+.chess-board .sq.highlight.capture::after{width:90%;height:90%;background:transparent;border:4px solid var(--highlight)}
+.chess-board .sq .piece{transition:transform .1s;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.3);line-height:1}
+.player-info{display:flex;align-items:center;gap:8px;width:min(70vw,480px);padding:4px 8px;font-size:.85rem}
+.player-info .player-name{font-weight:600}
+.player-info .player-rating{color:var(--text2);font-size:.78rem}
+.player-info.top{justify-content:flex-start}
+.player-info.bottom{justify-content:flex-start}
+.move-controls{display:flex;align-items:center;gap:6px;margin-top:4px}
+.flip-controls{margin-top:4px}
+.eval-bar-wrapper{display:flex;align-items:stretch;height:28px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative}
+.eval-bar{flex:1;position:relative;background:var(--red);border-radius:4px;overflow:hidden}
+.eval-fill{height:100%;background:var(--green);transition:width .3s ease;border-radius:4px}
+.eval-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.78rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8);z-index:1}
+.move-info{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:.82rem}
+.move-info .move-label{color:var(--text2);font-size:.72rem;display:block}
+.move-list-wrapper{max-height:200px;overflow-y:auto}
+.move-list{display:grid;grid-template-columns:auto 1fr 1fr;gap:2px 8px;font-size:.82rem;font-family:var(--mono)}
+.move-list .ml-num{color:var(--text2);text-align:right}
+.move-list .ml-w,.move-list .ml-b{padding:1px 6px;border-radius:3px;cursor:pointer;transition:background .15s}
+.move-list .ml-w:hover,.move-list .ml-b:hover{background:var(--bg3)}
+.move-list .ml-w.active,.move-list .ml-b.active{background:var(--accent);color:#fff}
+.actions-row{display:flex;gap:8px;flex-wrap:wrap}

@@ -1,0 +1,19 @@
+{
+  "name": "Chessign",
+  "version": "1.0.0",
+  "description": "Free game review site for chess.com and lichess.org using Stockfish 18 Lite WASM and AI coaching",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "deploy": "netlify deploy --prod"
+  },
+  "keywords": [
+    "chess",
+    "stockfish",
+    "analysis",
+    "review",
+    "chessign"
+  ],
+  "author": "",
+  "license": "MIT"
+}

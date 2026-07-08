@@ -1,0 +1,1 @@
+// Stockfish 18 Lite WASM placeholder - loaded via CDN in worker
