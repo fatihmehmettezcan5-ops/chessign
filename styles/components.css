@@ -16,6 +16,9 @@
 .tab-panel input,.tab-panel textarea{padding:10px 12px;background:var(--bg);border:1px solid var(--bg3);border-radius:6px;color:var(--text);font-size:.85rem;font-family:var(--font);outline:none;transition:border .2s;width:100%}
 .tab-panel input:focus,.tab-panel textarea:focus{border-color:var(--accent)}
 .tab-panel textarea{resize:vertical;min-height:80px;font-family:var(--mono);font-size:.82rem}
+.coach-context select{padding:10px 12px;background:var(--bg);border:1px solid var(--bg3);border-radius:6px;color:var(--text);font-size:.85rem;font-family:var(--font);outline:none;transition:border .2s;width:100%}
+.coach-context select:focus{border-color:var(--accent)}
+.coach-output .coach-result{white-space:pre-wrap;line-height:1.6}
 .coach-panel{background:var(--bg2);border-radius:var(--radius);padding:16px;border:1px solid var(--bg3);margin-top:8px}
 .coach-backend{font-size:.72rem;color:var(--text2);margin-left:auto}
 .coach-context{margin-bottom:8px}

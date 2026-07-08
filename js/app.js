@@ -3,7 +3,7 @@ import { parsePGN, gameAtMove, makeMoveList, samplePGN } from './pgn.js';
 import { fetchChesscomGames, fetchLichessGames } from './chess-apis.js';
 import { Board } from './board.js';
 import { StockfishEngine } from './stockfish.js';
-import { AICoach } from './ai-coach.js';
+import { AICoach, MODELS } from './ai-coach.js';
 
 const S = {
   moves: [], headers: {}, currentIdx: 0, game: null, pgn: '',
@@ -27,7 +27,21 @@ function init() {
     $('engineStatus').textContent = 'Motor: kullanılamıyor (' + e.message + ')';
     showToast('Stockfish motoru yüklenemedi: ' + e.message, 'error');
   });
+  populateModels();
   bindUI();
+}
+
+function populateModels() {
+  const sel = $('coachModel');
+  if (!sel) return;
+  MODELS.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = m.label;
+    sel.appendChild(opt);
+  });
+  sel.value = 'auto';
+  sel.addEventListener('change', () => S.coach.setModel(sel.value));
 }
 
 function bindUI() {

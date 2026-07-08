@@ -1,84 +1,64 @@
 const NIM_URL = '/api/nvidia';
 const GEMINI_URL = '/api/gemini';
-const SYSTEM_PROMPT = 'Sen Chessign AI Koçusun, dünya çapında bir satranç koçusun. Verilen satranç oyununu (PGN) analiz et. Hataları, kaçırılan taktikleri, pozisyonel iyileştirmeleri işaret et ve somut öğrenme noktaları öner. Teşvik edici ve spesifik ol. Türkçe yanıt ver. Yanıtlar 400 kelimenin altında olsun.';
 
-function buildPrompt(pgn, fen, question) {
-  let prompt = SYSTEM_PROMPT + '\n\n';
-  if (pgn) prompt += 'Full game PGN:\n' + pgn + '\n\n';
-  if (fen) prompt += 'Current position FEN: ' + fen + '\n\n';
-  prompt += 'User request: ' + question + '\n\n';
-  prompt += 'Provide your analysis:';
-  return prompt;
-}
+export const MODELS = [
+  { id: 'auto', label: 'Otomatik (DeepSeek öncelik)', group: 'auto' },
+  { id: 'deepseek-ai/deepseek-v4-pro', label: 'DeepSeek V4 Pro (NVIDIA, hızlı)', group: 'nvidia' },
+  { id: 'z-ai/glm-5.2', label: 'GLM-5.2 (NVIDIA, yavaş)', group: 'nvidia' },
+  { id: 'qwen/qwen3.5-122b-a10b', label: 'Qwen 3.5 122B (NVIDIA, yavaş)', group: 'nvidia' },
+  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Google, hızlı)', group: 'google' },
+  { id: 'gemini-flash-latest', label: 'Gemini Flash Latest (Google)', group: 'google' },
+  { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite (Google, yedek)', group: 'google' },
+];
 
 export class AICoach {
   constructor(outputId) {
     this.outputEl = document.getElementById(outputId);
     this._busy = false;
+    this.model = 'auto';
   }
+
+  setModel(id) { this.model = id; }
 
   async ask(pgn, fen, question, moveHistory) {
     if (this._busy) return;
     this._busy = true;
     this._showLoading();
 
-    const prompt = buildPrompt(pgn, fen, question);
+    const endpoint = NIM_URL;
 
     try {
-      const response = await this._callNim(prompt);
-      this._showResult(response.response, response.backend);
-    } catch (nimErr) {
-      try {
-        const response = await this._callGemini(prompt);
-        this._showResult(response.response, response.backend);
-      } catch (gemErr) {
-        this._showError('Her iki AI arka ucu da başarısız oldu. NVIDIA: ' + nimErr.message + '; Gemini: ' + gemErr.message);
-      }
+      const response = await this._callBackend(pgn, fen, question, endpoint);
+      this._showResult(response.response, response.backend + (response.tried ? ' (denendi: ' + response.tried.join(', ') + ')' : ''));
+    } catch (err) {
+      this._showError(err.message);
     } finally {
       this._busy = false;
     }
   }
 
-  async _callNim(prompt) {
-    const resp = await fetch(NIM_URL, {
+  async _callBackend(pgn, fen, question, endpoint) {
+    const resp = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'meta/llama-3.3-70b-instruct',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 600,
-        temperature: 0.3
+        pgn,
+        fen,
+        question,
+        model: this.model
       })
     });
     if (!resp.ok) {
       const err = await resp.text().catch(() => '');
-      throw new Error('NVIDIA API error: ' + resp.status + ' ' + err);
+      throw new Error('Backend error: ' + resp.status + ' ' + err);
     }
     const data = await resp.json();
-    const text = data.choices?.[0]?.message?.content || 'No response';
-    return { response: text, backend: 'nvidia-nim' };
-  }
-
-  async _callGemini(prompt) {
-    const resp = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 600, temperature: 0.3 }
-      })
-    });
-    if (!resp.ok) {
-      const err = await resp.text().catch(() => '');
-      throw new Error('Gemini API error: ' + resp.status + ' ' + err);
-    }
-    const data = await resp.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
-    return { response: text, backend: 'gemini-pro' };
+    if (data.error) throw new Error(data.error);
+    return data;
   }
 
   _showLoading() {
-    this.outputEl.innerHTML = '<div class="coach-loading"><div class="spinner"></div> AI Koç oyununuzu analiz ediyor…</div>';
+    this.outputEl.innerHTML = '<div class="coach-loading"><div class="spinner"></div> AI Koç oyununuzu analiz ediyor… (model: ' + (this.model === 'auto' ? 'otomatik' : this.model) + ')</div>';
     const backEl = document.getElementById('coachBackend');
     if (backEl) backEl.textContent = 'arka uç: —';
   }
@@ -86,6 +66,7 @@ export class AICoach {
   _showResult(text, backend) {
     this.outputEl.innerHTML = '';
     const pre = document.createElement('div');
+    pre.className = 'coach-result';
     pre.textContent = text;
     this.outputEl.appendChild(pre);
     const backEl = document.getElementById('coachBackend');
@@ -93,7 +74,7 @@ export class AICoach {
   }
 
   _showError(msg) {
-    this.outputEl.innerHTML = '<div class="coach-error">Error: ' + this._escape(msg) + '</div>';
+    this.outputEl.innerHTML = '<div class="coach-error">Hata: ' + this._escape(msg) + '</div>';
   }
 
   _escape(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
